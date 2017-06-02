@@ -1,0 +1,11 @@
+{application, beat, [
+    {description, "A gentler Erlang syntax for beginners"},
+    {vsn, "1.0.0"},
+    {modules, []},
+    {registered, []},
+    {applications, [kernel, stdlib, aleppo]},
+
+    {maintainers, ["Otto Lopez Valerio"]},
+    {licenses, ["APL 2.0"]},
+    {links, [{"Github", "https://github.com/numericit/beat"}]}
+]}.

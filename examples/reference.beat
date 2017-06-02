@@ -1,0 +1,451 @@
+
+fn return_one
+    case: 1
+end
+
+fn add_two
+    case A, B: A + B
+end
+
+fn bool_to_text
+    case true: 'true'
+    case false: 'false'
+    else: 'not a boolean'
+end
+
+fn bool_to_text_1
+    case true: 'true'
+    case false: 'false'
+    case _: 'not a boolean'
+end
+
+fn two_are_the_same
+    case A, A: true
+    case _, _: false
+end
+
+fn two_are_the_same_1
+    case A, A: true
+    else: false
+end
+
+fn two_are_the_same_2
+    case _A, _A: true
+    else: false
+end
+
+fn two_are_the_same_3
+    case A, B when A == B: true
+    else: false
+end
+
+fn divide_two_unsafe
+    case A, B: A / B
+end
+
+fn divide_two
+    case _A, 0: (error, division_by_zero)
+    case A, B: (ok, A / B)
+end
+
+fn print
+   case Text:
+        io.format(Text ++ "~n")
+end
+
+fn print
+    case Format, Args:
+        io.format(Format ++ "~n", Args)
+end
+
+fn print_div_result
+    case (ok, Result):
+        print("result is: ~p", [Result])
+    case (error, Reason):
+        print("error is: ~p", [Reason])
+end
+
+fn print_div_result_1
+    case A, B:
+         match divide_two(A, B):
+            case (ok, Result):
+                print("result is: ~p", [Result])
+            case (error, Reason):
+                print("error is: ~p", [Reason])
+         end
+end
+
+fn print_div_result_2
+    case A, B:
+         match divide_two(A, B):
+            case ok, Result:
+                print("result is: ~p", [Result])
+            case error, Reason:
+                print("error is: ~p", [Reason])
+         end
+end
+
+fn items_to_string
+    case Items:
+         lists.map(fn any_to_string:1, Items) -> string.join(", ")
+end
+
+fn any_to_string
+    case V when is_integer(V):
+        integer_to_list(V)
+    case V when is_float(V):
+        float_to_list(V)
+    case V when is_atom(V):
+        atom_to_list(V)
+    case V when is_binary(V):
+        binary_to_list(V)
+    case V when is_tuple(V):
+        "(" ++ items_to_string(tuple_to_list(V)) ++ ")"
+    case V when is_map(V):
+        KVs = maps.to_list(V)
+
+        KVsStrs = lists.map(KVs) <<- case (Key, Val):
+            KStr = any_to_string(Key)
+            VStr = any_to_string(Val)
+            KStr ++ ": " ++ VStr
+        end
+
+        "{" ++ string.join(KVsStrs, ", ") ++ "}"
+    case V when is_list(V):
+        "[" ++ items_to_string(V) ++ "]"
+end
+
+fn any_to_string_1
+    case Value:
+        match Value:
+            case V when is_integer(V):
+                integer_to_list(V)
+            case V when is_float(V):
+                float_to_list(V)
+            case V when is_atom(V):
+                atom_to_list(V)
+            case V when is_binary(V):
+                binary_to_list(V)
+            case V when is_tuple(V):
+                "(" ++ items_to_string(tuple_to_list(V)) ++ ")"
+            case V when is_map(V):
+                KVs = maps.to_list(V)
+
+                KVsStrs = lists.map(KVs) <<- case (Key, Val):
+                    KStr = any_to_string(Key)
+                    VStr = any_to_string(Val)
+                    KStr ++ ": " ++ VStr
+                end
+
+                "{" ++ string.join(KVsStrs, ", ") ++ "}"
+            case V when is_list(V):
+                "[" ++ items_to_string(V) ++ "]"
+       end
+end
+
+fn any_to_string_2
+    case V:
+        when is_integer(V):
+            integer_to_list(V)
+        else is_float(V):
+            float_to_list(V)
+        else is_atom(V):
+            atom_to_list(V)
+        else is_binary(V):
+            binary_to_list(V)
+        else is_tuple(V):
+            "(" ++ items_to_string(tuple_to_list(V)) ++ ")"
+        else is_map(V):
+            KVs = maps.to_list(V)
+
+            KVsStrs = lists.map(KVs) <<- case (Key, Val):
+                KStr = any_to_string(Key)
+                VStr = any_to_string(Val)
+                KStr ++ ": " ++ VStr
+            end
+
+            "{" ++ string.join(KVsStrs, ", ") ++ "}"
+        else is_list(V):
+            "[" ++ items_to_string(V) ++ "]"
+        end
+end
+
+fn print_any
+    case V: print(any_to_string(V))
+end
+
+fn receive_and_print
+    case:
+        Pid = self()
+        receive
+            case ping:
+                 print("~p received ping", [Pid])
+            case Other:
+                 print("~p received something else: ~p", [Pid, Other])
+        after 1000:
+              print("Nothing received after 1000ms")
+        end
+end
+
+fn spawn_receive
+    case:
+        OuterPid = self()
+        spawn(fn case:
+              SpawnPid = self()
+              print("Process ~p sending to ~p", [SpawnPid, OuterPid])
+              OuterPid ! ping
+        end)
+
+        receive_and_print()
+
+        receive_and_print()
+end
+
+fn sleep
+    case TimeMs:
+         print("sleeping ~pms", [TimeMs])
+
+         receive
+         after TimeMs:
+               ok
+         end
+end
+
+fn dynamic_call
+    @doc("this function shows all the ways you can call a function")
+    case:
+        Mod = lists
+        Fun = seq
+        From = 1
+        To = 4
+
+        R = lists.seq(From, To)
+        R = lists.Fun(From, To)
+        R = Mod.seq(From, To)
+        R = Mod.Fun(From, To)
+
+        F1 = fn lists.seq:2
+        F2 = fn lists.Fun:2
+        F3 = fn Mod.seq:2
+        F4 = fn Mod.Fun:2
+
+        R = F1(From, To)
+        R = F2(From, To)
+        R = F3(From, To)
+        R = F4(From, To)
+
+        Fn = fn case: lists.seq(From, To) end
+
+        R = Fn()
+
+        R = apply(lists, seq, [From, To])
+        R = apply(lists, Fun, [From, To])
+        R = apply(Mod, seq, [From, To])
+        R = apply(Mod, Fun, [From, To])
+
+        print("all calls returned the same result")
+end
+
+@record(account) -> (username, password, email)
+@record(post) -> (title is string(), content = "" is string(), author = "anonymous")
+
+@type(result(E, V)) -> (error, E) or (ok, V)
+@type(division_error()) -> result(division_by_zero, number())
+
+fn divide_two_typed
+    @spec(number(), number()) -> division_error()
+    case _A, 0: (error, division_by_zero)
+    case A, B: (ok, A / B)
+end
+
+fn use_records
+    case:
+        Account1 = #r.account {username: 'bob', password: 'secret'}
+
+        print("account1 ~p", [Account1])
+        print("account1 username ~p email ~p", [#r.account.username Account1,
+                                                #r.account.email Account1])
+
+        #r.account {username: Username, email: Email} = Account1
+        Account2 = #r.account Account1#{email: 'bob@nickelodeon.com'}
+
+        print("account1 username ~p email ~p", [Username, Email])
+
+        print("account2 ~p", [Account2])
+        print("account2 username ~p email ~p", [#r.account.username Account2,
+                                                #r.account.email Account2])
+
+        UsernameIndex = #r.account username
+        print("username field index is ~p", [UsernameIndex])
+
+        Post = #r.post {title: "My Post"}
+        print("post ~p", [Post])
+end
+
+fn use_maps
+    case:
+        Account1 = {username: 'bob', password: 'secret', email: 'bob@gmail.com'}
+
+        print("account1 ~p", [Account1])
+        print("account1 username ~p email ~p", [maps.get(username, Account1),
+                                                maps.get(email, Account1)])
+
+        {username = Username, email = Email} = Account1
+        Account2 = Account1#{email: 'bob@nickelodeon.com'}
+
+        print("account1 username ~p email ~p", [Username, Email])
+
+        print("account2 ~p", [Account2])
+        print("account2 username ~p email ~p", [maps.get(username, Account2),
+                                                maps.get(email, Account2)])
+
+        Post = {title: "My Post"}
+        print("post ~p", [Post])
+end
+
+fn tagged_values
+    case:
+        print("the code for character C is ~p", [#c "C"])
+
+        Hello1 = "hello"
+        Hello2 = [#c "h", #c "e", #c "l", #c "l", #c "o"]
+        Hello3 = #c "h" :: #c "e" :: #c "l" :: #c "l" :: #c "o" :: []
+
+        print("this three strings are equivalent ~p ~p ~p", [Hello1, Hello2, Hello3])
+
+        print("this two atoms are equivalent ~p ~p", [#atom "an atom", `an atom`])
+        print("this print is at line ~p in module ~p", [#i line, #i module])
+end
+
+fn main @public
+    case:
+        print("hi")
+        print("hi ~p", ["bob"])
+        print(any_to_string(return_one()))
+
+        print_any(add_two(1, 2))
+
+        print(any_to_string(bool_to_text(true)))
+        print(any_to_string(bool_to_text(false)))
+        print(any_to_string(bool_to_text(42)))
+
+        print(any_to_string(bool_to_text_1(true)))
+        print(any_to_string(bool_to_text_1(false)))
+        print(any_to_string(bool_to_text_1(42)))
+
+        print("1 == 1? ~p", [two_are_the_same(1, 1)])
+        print("1 == 2? ~p", [two_are_the_same(1, 2)])
+
+        print("1 == 1? ~p", [two_are_the_same_1(1, 1)])
+        print("1 == 2? ~p", [two_are_the_same_1(1, 2)])
+
+        print("1 == 1? ~p", [two_are_the_same_2(1, 1)])
+        print("1 == 2? ~p", [two_are_the_same_2(1, 2)])
+
+        print("1 == 1? ~p", [two_are_the_same_3(1, 1)])
+        print("1 == 2? ~p", [two_are_the_same_3(1, 2)])
+
+        print_any(divide_two(8, 2))
+        print_any(divide_two(8, 0))
+
+        try
+            print_any(divide_two_unsafe(8, 2))
+        catch
+            case T, E:
+                 print("Error doing 8/2: ~p ~p", [T, E])
+        end
+
+        try
+            print_any(divide_two_unsafe(8, 0))
+        catch
+            case T1, E1:
+                 print("Error doing 8/0: ~p ~p", [T1, E1])
+            after
+                print("After division attempt")
+        end
+
+        try
+            throw(hi)
+        catch
+            case E2:
+                 print("Error was: ~p", [E2])
+        end
+
+        print_div_result(divide_two(8, 2))
+        print_div_result(divide_two(8, 0))
+
+        print_div_result_1(8, 2)
+        print_div_result_1(8, 0)
+
+        print_div_result_2(8, 2)
+        print_div_result_2(8, 0)
+
+        print(any_to_string_1('hi'))
+        print(any_to_string_1(some_atom))
+        print(any_to_string_1(`some atom`))
+        print(any_to_string_1(`fn`))
+        print(any_to_string_1([1, 2.0, true, atom, [], (), {a: 42, b: 'bob'}]))
+
+        print(any_to_string_2('hi'))
+        print(any_to_string_2(some_atom))
+        print(any_to_string_2([1, 2.0, true, atom, [], (), {a: 42, b: 'bob'}]))
+
+        for I in lists.seq(1, 10):
+            print("I: ~p", [I])
+        end
+
+        for I1 in lists.seq(1, 10); when I1 % 2 == 0:
+            print("I1: ~p", [I1])
+        end
+
+        for I2 in lists.seq(1, 10); when I2 % 2 == 0; when I2 != 8:
+            print("I2: ~p", [I2])
+        end
+
+        for I3 in lists.seq(1, 4); J3 in lists.seq(1, 4); when I3 != J3:
+            print("I3, J3: ~p, ~p", [I3, J3])
+        end
+
+        io.format("block result: ~p", [begin
+                             A = 8
+                             B = 0
+                             divide_two(A, B)
+                         end])
+
+        print(any_to_string_1(1 :: 2 :: 3 :: []))
+
+        [One, Two, Three, Four] = [1, 2, 3, 4]
+        print("items on the list are: ~p ~p ~p ~p", [One, Two, Three, Four])
+        print("the list is ~p", [[1, 2, 3, 4]])
+        print("the list is ~p", [1 :: 2 :: 3 :: []])
+
+        Head1 :: Tail1 = [1, 2, 3, 4]
+        Head2 :: Tail2 = [1]
+        print("head ~p, tail ~p", [Head1, Tail1])
+        print("head ~p, tail ~p", [Head2, Tail2])
+
+        {name = Name} = {name: 'bob', age: 29}
+        print("name is ~s", [Name])
+
+        (_, Result) = (ok, 42)
+        print("result is ~p", [Result])
+
+        print("add ops ~p", [1 + 2 - 3 + -4])
+        print("mul ops ~p", [1 * 2 / 3 % 4])
+        print("comp ops ~p", [1 < 2 <= 3 == 4 is 5 != 6 isnt 7 >= 8 > 9])
+        print("bool ops ~p", [true and false or true xor false andd not true orr not false])
+        print("bin ops ~p", [~1 & 2 ^ 3 | 4])
+
+        dynamic_call()
+
+        tagged_values()
+
+        print_div_result(divide_two_typed(8, 2))
+        print_div_result(divide_two_typed(8, 0))
+
+        use_records()
+        use_maps()
+
+        spawn_receive()
+        sleep(50)
+end

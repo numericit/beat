@@ -1,0 +1,398 @@
+@export(types/1)
+@export_type(post/0, option/1)
+@import(erlang, [phash2/1, external_size/2])
+@on_load(load/0)
+@vsn((1, 2, 3))
+@vsn("1.2.3")
+
+@type(gender) -> male or female or other
+@type(age) -> range(0, 150)
+@type(option(X)) -> (some, X) or none
+
+@record(account) -> (username, password, email)
+@record(post) -> (title is string(), content = "" is string(), author = "anonymous", other)
+@record(state) -> (counter = 0, last_modification)
+
+@opaque(state) -> #r state
+
+fn load case: io.format("loaded~n") end
+
+fn types @public
+  @doc("function that explored efene types")
+
+  case int:
+    1
+    -1
+    42
+  case float:
+    1.0
+    -1.25
+    0.14
+  case boolean:
+    B = true
+    B1 = false
+    B2 = not true
+    B3 = not false
+    B4 = not B
+  case string:
+    ""
+    "a"
+    "lala"
+    "hi \"there\"!"
+    "hi 'there'"
+  case bstring:
+    ''
+    'a'
+    'lala'
+    'hi \'there\'!'
+    'hi "there"'
+    #b {'a': binary, 'sd': binary}
+  case char:
+    A = #c "A"
+    Hello = [#c "h", #c "e", #c "l", #c "l", #c "o"]
+  case atom:
+    a
+    atom
+    #atom "an atom"
+    `an atom`
+    `1atom`
+    atom1
+
+    (`if`, `else`, `try`, `catch`, `receive`, `after`, `case`, `match`, `when`,
+     `fn`, `do`, `for`, `in`, `begin`, `end`)
+  case list:
+    []
+    [1]
+    [1,]
+    [1, 2]
+    [1, 2,]
+    [[], [[]], [[[]]]]
+  case cons:
+    Cons = [a :: b]
+    L = [2,3,4]
+    L0 = [2,3,4,]
+    L1 = [1 :: L]
+    L10 = [1, :: L]
+    L2 = [0, 1 :: L]
+    L20 = [0, 1, :: L]
+    L3 = [0, 1, 2 :: L]
+    L30 = [0, 1, 2, :: L]
+  case tuple:
+    ()
+    (1,)
+    (1, 2)
+    (1, 2,)
+    ((), ((),), (((),),))
+  case maps:
+    {}
+    A = {a: b}
+    A0 = {a: b,}
+    {atom: atom, 'bstr': 'hi', "str": "hi", 42: 24, 1.2: 2.1, true: false}
+    {atom = atom, 'bstr' = 'hi', "str" = "hi", 42 = 24, 1.2 = 2.1, true = false} = A
+  case record:
+    State = #r.state {counter: 1, last_modification: now()}
+    State1 = #r.state State#{counter: 2}
+    Counter = #r.state.counter State
+    CounterIdx = #r.state counter
+    #r.state {counter: Counter} = State
+  case binary:
+    B0 = #b {}
+    B = #b {_: _,
+            A: _,
+            JustSize: 8,
+            JustType: binary,
+            E: {},
+            _: {size: 8},
+            _: {type: float},
+            _: {sign: unsigned},
+            _: {endianness: big},
+            _: {unit: 8},
+            B: {size: 8, type: float, sign: signed, endianness: little, unit: 16}}
+    B1 = #b {1: 4, V: _, 3: {}, 4: float}
+    Packet = nil
+    Size = 6
+    #b {Size: 8, Data: {type: binary, size: Size}}
+    #b {Version:4, IHL:4, TypeOfService:8, TotalLength:16,  Identification:16,
+        FlagX:1, FlagD:1, FlagM:1,  FragmentOffset:13, TTL:8, Protocol:8,
+        HeaderCheckSum:16, SourceAddress:32, DestinationAddress:32,
+        Rest: binary} = Packet
+  case call:
+    L = lists
+    S = seq
+    R = lists.seq(1, 10)
+    R = L.S(1, 10)
+    R = lists.S(1, 10)
+    R = L.seq(1, 10)
+    One = identity(1)
+
+    I = fn identity:1
+    One = I(1)
+
+    L1 = fn lists.seq:2
+    L2 = fn lists.S:2
+    L3 = fn L.seq:2
+    L4 = fn L.S:2
+    R = L1(1, 10)
+    R = L2(1, 10)
+    R = L3(1, 10)
+    R = L4(1, 10)
+
+    MapR = fn case List, Fun:
+      lists.map(Fun, List)
+    end
+
+    lists.map(R) <<- case X:
+      X + 1
+    end
+
+    MapR(R) <- case X:
+      X + 1
+    end
+
+    R ->> lists.map(fn case X: X + 1 end)
+      -> MapR(fn case X: X + 1 end)
+      -> length()
+
+  case bin_ops:
+    ~1 & 2 ^ 3 | 4
+  case math_ops:
+    1 + 2 - 3 * 4 / 5 % 6
+    (1 + 2) * 3 / (4 - 5)
+  case bool_ops:
+    true and false or true xor false andd not true orr not false
+  case comp_ops:
+       1 < 2 <= 3 == 4 is 5 != 6 isnt 7 >= 8 > 9
+  case compile_info:
+       Line = #i line
+       Module = #i module
+       ModuleString = #i module_string
+       FunctionName = #i function_name
+       FunctionArity = #i function_arity
+  case begin_expr:
+       begin
+           io.format("hello ~p", ["world"])
+           42
+       end
+  case for_expr:
+    for X in lists.seq(1, 10):
+      X + 1
+    end
+
+    for X in lists.seq(1, 10); when X % 2 is 0:
+      X + 1
+    end
+
+    for X in lists.seq(1, 10); Y in lists.seq(10, 20):
+      (X, Y)
+    end
+
+    B = for #b {B1: _} in A: B1 end
+    C = for C1 in A: C1 end
+  case bin_for_expr:
+    ^b for A in foo(10):
+      A + 1
+    end
+
+    D = ^b for #b {D1:_} <- A: #b {D1:_} end
+    E = ^b for E1 <- A: #b {D1:_} end
+  case fun_expr:
+
+        Plus = fn
+            case A, B: A + B
+        end
+
+        Plus1 = fn
+            case A, B: A + B
+            else: 0
+        end
+
+        F = fn Fact
+            case 0: 1
+            case N: N * Fact(N - 1)
+        end
+  case try_expr:
+       try
+         1/0
+       after
+         ok
+       end
+
+       try
+         1/0
+       catch
+           case error, badarith: ok
+       end
+
+       try
+         1/0
+       catch else:
+         ok
+       end
+
+       try
+         1/0
+       catch
+           case error, badarith: ok
+       after
+         ok
+       end
+
+       try
+         1/0
+       catch
+            case throw, T1: T1
+            case Throw: Throw
+            case error, E1: E1
+            case exit, X1: X1
+            case A, C: C
+            else: iselse
+       end
+  case match_expr:
+       Error = (throw, badarg)
+       match Error:
+            case throw, T1: T1
+            case error, E1: E1
+            case exit, X1: X1
+            case A, C: C
+            else: iselse
+       end
+  case receive_expr:
+       receive
+            case throw, T1: T1
+            case error, E1: E1
+            case exit, X1: X1
+            case A, C: C
+            else: iselse
+       end
+
+       receive
+            case throw, T1: T1
+            case error, E1: E1
+            case exit, X1: X1
+            case A, C: C
+            else: iselse
+       after 1000:
+            ok
+       end
+  case when_expr when true, false; true, false; true; false:
+    when true, false; true, false; true; false:
+        1
+    else true, false; true, false; true:
+        2
+    else true, false; true, false:
+        3
+    else true, false:
+        4
+    else true:
+        5
+    else:
+        6
+    end
+
+    when true: ok
+    else: error
+    end
+end
+
+fn identity @public
+  case X:
+    X
+end
+
+fn test1 case: [] end
+fn test2 @public case: [] end
+fn test3 @public @doc("hi") case: [] end
+
+fn test4
+    case: []
+end
+
+fn test5 @public
+    case: []
+end
+
+fn test6 @public
+    @doc("hi")
+    case: []
+end
+
+fn test7
+    case: []
+end
+
+fn test8
+    @public
+    case: []
+end
+
+fn test9
+    @public
+    @doc("hi")
+    case: []
+end
+
+fn test10
+    case:
+        []
+end
+
+fn test11 case A: when A < 10: low else: hi end end
+fn test12 @public case A: when A < 10: low else: hi end end
+fn test13 @public @doc("hi") case A: when A < 10: low else: hi end end
+
+fn test14 @public
+    case A
+           when A is a,
+                A is b,
+                A is c:
+        A
+end
+
+fn test15 @public
+    case A when A is a,
+                A is b,
+                A is c:
+        A
+end
+
+fn test16 @public
+    case A when A is a, A is b,
+                A is c:
+        A
+end
+
+fn test17 @public
+    case A when A is a, A is b, A is c:
+        A
+end
+
+fn test18 @public
+    case A when A is a, A is b, A is c: A
+end
+
+fn test19 @public case A when A is a, A is b, A is c: A
+end
+
+fn test20 @public case A when A is a, A is b, A is c: A end
+
+fn my_xor case V1, V2:
+
+  R1 = match (V1, V2):
+    case A, A: false
+    case _, _: true
+  end
+
+  R2 = match V1, V2:
+    case B, B: false
+    case _, _: true
+  end
+
+  T = (V1, V2)
+
+  R3 = match T:
+    case C, C: false
+    case _, _: true
+  end
+
+  (R1, R2, R3)
+end

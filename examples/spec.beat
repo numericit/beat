@@ -1,0 +1,39 @@
+@record(person) -> (first, last)
+
+@type(tint) -> 42
+@type(tatom) -> asd
+@type(tbool) -> false
+@type(lempty) -> []
+@type(lone) -> [42]
+@type(l3) -> [tatom()]
+@type(trange) -> range(1, 10)
+@type(tres) -> (ok, integer()) or (error, term()) or (stop, normal)
+
+@type(bsempty) -> binary(0, 0)
+@type(bsone) -> binary(4, 0)
+@type(bsonemul) -> binary(0, 5)
+@type(bstwo) -> binary(4, 5)
+
+
+@type(p1(X)) -> (ok, X, X)
+@type(p2(X, Y)) -> (ok, X, Y)
+
+@type(f1) -> fun()
+@type(f2) -> fun(any, integer())
+@type(f3) -> fun([boolean(), term()], integer())
+@type(f4) -> fun([], integer())
+
+@type(c1) -> list(any())
+@type(c2(X)) -> list(X)
+
+@opaque(tperson) -> #r person
+
+fn foo
+    @spec(integer(), ok) -> (ok, dict.dict()) or notfound
+    @http.get("/foo/:bar") -> json
+    @doc("a useless function")
+    @accept -> json
+    @produces(json, xml, edn)
+    case X, ok:
+        X
+end

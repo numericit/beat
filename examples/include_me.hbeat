@@ -1,0 +1,6 @@
+
+@record(user) -> (username='', password=nil)
+
+fn say_hello case:
+    io.format("hello")
+end

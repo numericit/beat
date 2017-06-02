@@ -1,0 +1,20 @@
+@include("examples/ms.hrl")
+
+fn main @public case:
+    a_function_in_the_macro_file = what_am_i()
+    "bob" = #m AUTHOR
+    2 * 3 = #m Const
+    ("bob", bob) = #m AUTHOR(bob)
+    12 + 1 = #m Inc(12)
+    42 * 5 + 2 * 3 = #m IncConst(42 * 5)
+    #m TESTCALL(what_am_i())
+    "hi there" ++ "1 - 2" = #m NestedText("hi there")
+    "1 * 2 + 3" = #m Text(1 * 2 + 3)
+    1 + 2 + 3 = #m AddPlusOne(2, 3)
+    #m Int(456) = #m Int(123, 456)
+    #m V(123, integer, 456) = #m Int(123, 456)
+    (val, 123, integer, 456) = #m Int(123, 456)
+    1 + (val, 123, integer, 456) = #m Int1(123, 456)
+    FreeVar = 12
+    13 + 12 = #m OneFreeVar(13) 
+end

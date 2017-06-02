@@ -1,0 +1,4 @@
+fn add_two case A, B:
+   A + B
+end
+

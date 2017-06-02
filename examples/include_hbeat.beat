@@ -1,0 +1,6 @@
+
+@include("examples/include_me.hfn")
+
+fn main @public case:
+    say_hello()
+end

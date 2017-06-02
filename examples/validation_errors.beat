@@ -1,0 +1,63 @@
+
+@on_load(inexistent/1)
+@on_load(inexistent/0)
+
+@record(rec1) -> (a,)
+@record(rec1) -> (a, b)
+
+@record(rec2) -> (a, b, b)
+
+@type(any) -> boolean()
+
+@type(a) -> boolean()
+@type(a) -> integer()
+
+fn revoke_bucket @public
+  @spec(any(), any(), any(), any()) -> foo()
+  case Conf, Bucket, Username, Permission
+         when Permission is get, Permission is put,
+              Permission is list, Permission is grant:
+
+    bar(1)
+    length([])
+    M1 = {(1 + 2): 3}
+    _M2 = {M1: 3}
+    _M3 = {a = 2}
+
+    R = #r.person {name: 'bob'}
+    R1 = #r.rec1 {A: 2}
+    R2 = #r.rec1 {c: 2}
+    1 + R = 3
+    (Conf, (bucket, Bucket), Username, Permission, 'revoke')
+  else:
+    (error, (invalid_permission, Permission))
+end
+
+fn length case A: 1 end
+
+fn length case A: 2 end
+
+fn more_errors @public case P when length([]):
+    A = 'a'
+    B = #b [{val: A, size: 8}] = #b [{val: A, size: 8}]
+    B1 = #b [{val: A}, {val: A, size: 8}]
+    (a, b) = (b, c, d)
+    (B, B1)
+
+    match P:
+      case ok:
+        R = 2
+        ok
+      case Other:
+        Other
+    end
+
+    R
+end
+
+fn bad_guard @public case A when now() > 0: ok end
+
+fn bad_record_info case A:
+    record_info(fields, A)
+    record_info(size, A)
+end
